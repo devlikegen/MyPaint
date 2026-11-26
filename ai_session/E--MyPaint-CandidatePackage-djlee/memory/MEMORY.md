@@ -1,0 +1,2 @@
+- [No AI attribution in commits](no-ai-attribution-in-commits.md) — never add Co-Authored-By Claude / Generated-with lines to commits or PRs
+- [UI testing environment](ui-testing-environment.md) — drive MyPaint via Win32 messages; cursor moves are refused, guard key input

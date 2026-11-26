@@ -10,6 +10,35 @@
 #define new DEBUG_NEW
 #endif
 
+namespace
+{
+    /** @brief 수명 동안 GDI+를 켜 두는 RAII 객체 */
+    class GdiplusSession
+    {
+    public:
+        GdiplusSession()
+        {
+            Gdiplus::GdiplusStartupInput input;
+            m_started = Gdiplus::GdiplusStartup(&m_token, &input, nullptr) == Gdiplus::Ok;
+        }
+        ~GdiplusSession()
+        {
+            if (m_started)
+            {
+                Gdiplus::GdiplusShutdown(m_token);
+            }
+        }
+        GdiplusSession(const GdiplusSession&) = delete;
+        GdiplusSession& operator=(const GdiplusSession&) = delete;
+
+        bool IsStarted() const { return m_started; }
+
+    private:
+        ULONG_PTR m_token = 0;
+        bool m_started = false;
+    };
+}
+
 BEGIN_MESSAGE_MAP(CMyPaintApp, CWinApp)
 END_MESSAGE_MAP()
 
@@ -29,6 +58,14 @@ BOOL CMyPaintApp::InitInstance()
     InitCommonControlsEx(&icc);
 
     CWinApp::InitInstance();
+
+    // GDI+는 대화 상자보다 먼저 켜고 나중에 꺼야 하므로, 대화 상자보다 먼저 선언합니다.
+    GdiplusSession gdiplus;
+    if (!gdiplus.IsStarted())
+    {
+        AfxMessageBox(L"GDI+를 초기화하지 못했습니다.", MB_ICONERROR);
+        return FALSE;
+    }
 
     CMyPaintDlg dlg;
     m_pMainWnd = &dlg;
